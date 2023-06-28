@@ -82,8 +82,7 @@ services:
       ports:
         - "8087:8087/tcp"
       networks:
-        - gova11y-int
-        - gova11y-mid
+        - gova11y
       depends_on:
         - rabbit
       deploy:
