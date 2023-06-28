@@ -1,0 +1,170 @@
+version: '3.8'
+
+# This is from Equalify and a TODO is to update to GovA11y Containers
+services:
+
+# Workers
+  scan-axe:
+    image: equalifyapp/integration-axe:latest
+    environment:
+      - APP_PORT=8083
+      - RABBIT_USERNAME=worker_axe
+      - RABBIT_PASSWORD=drop_the_axe
+      - RABBIT_HOST=rabbit
+      - RABBIT_VHOST=gova11y
+      - USE_PROXY
+      - PROXY_HTTP=a11yproxy:8888
+      - PROXY_HTTPS=a11yproxy:8888
+      - LOG_LEVEL
+    networks:
+      - gova11y
+    depends_on:
+      - rabbit
+      - a11yproxy
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  scan-uppies:
+      image: equalifyapp/integration-uppies:latest
+      environment:
+        - APP_PORT=8083
+        - RABBIT_USERNAME=worker_uppies
+        - RABBIT_PASSWORD=pass_the_uppies_please
+        - RABBIT_HOST=rabbit
+        - RABBIT_VHOST=gova11y
+        - USE_PROXY
+        - PROXY_HTTP=a11yproxy:8888
+        - PROXY_HTTPS=a11yproxy:8888
+        - LOG_LEVEL
+      networks:
+        - gova11y
+      depends_on:
+        - rabbit
+        - a11yproxy
+      deploy:
+        replicas: 1
+        restart_policy:
+          condition: on-failure
+
+  crawler:
+    image: equalifyapp/integration-crawler:latest
+    environment:
+      - APP_PORT=8086
+      - USE_PROXY
+      - PROXY_HTTP=a11yproxy:8888
+      - PROXY_HTTPS=a11yproxy:8888
+      - LOG_LEVEL
+    networks:
+      - gova11y
+    depends_on:
+      - rabbit
+      - a11yproxy
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+
+
+  # Matrix
+  matrix:
+      image: equalifyapp/a11ymatrix:latest
+      environment:
+        - DB_HOST
+        - DB_PORT
+        - DB_USER
+        - DB_PASSWORD
+        - DB_NAME
+        - LOG_LEVEL
+        - APP_PORT=8087
+      ports:
+        - "8087:8087/tcp"
+      networks:
+        - gova11y-int
+        - gova11y-mid
+      depends_on:
+        - rabbit
+      deploy:
+        restart_policy:
+          condition: on-failure
+
+  # Rabbit Hole - Insert values to Postgres
+  rabbit-hole:
+      image: equalifyapp/rabbit-hole:latest
+      environment:
+        - DB_HOST
+        - DB_PORT
+        - DB_USER
+        - DB_PASSWORD
+        - DB_NAME
+        - LOG_LEVEL
+        - APP_PORT=8084
+      ports:
+        - "8084:8084"
+      networks:
+        - gova11y
+      depends_on:
+        - rabbit
+      deploy:
+        restart_policy:
+          condition: on-failure
+
+
+  # RabbitMQ Service
+  rabbit:
+    image: equalifyapp/a11y-rabbit:latest
+    hostname: rabbit
+    ports:
+      - "4369:4369/tcp"
+      - "5672:5672/tcp"
+      - "15672:15672/tcp"
+    networks:
+      - gova11y
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl wait -q -t 5 /var/lib/rabbitmq/mnesia/rabbit@rabbit.pid"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+
+  # Proxy Server
+  a11yproxy:
+      image: qmcgaw/gluetun:latest
+      hostname: a11yproxy
+      cap_add:
+        - NET_ADMIN
+      environment:
+        - VPN_SERVICE_PROVIDER
+        - VPN_TYPE
+        - WIREGUARD_PRIVATE_KEY
+        - WIREGUARD_ADDRESSES
+        - SERVER_COUNTRIES
+        # HTTP Proxy: https://github.com/qdm12/gluetun/wiki/HTTP-proxy-options
+        - HTTPPROXY=on
+        - HTTPPROXY_LOG=on
+        - HTTPPROXY_LISTENING_ADDRESS=:8888
+        # DNS: https://github.com/qdm12/gluetun/wiki/DNS-options
+        - DNS_ADDRESS=127.0.0.1
+        - DOT_PRIVATE_ADDRESS=172.172.172.172
+        - BLOCK_MALICIOUS=off
+        - DOT_CACHING=on
+        - DOT=on
+        # Other Options: https://github.com/qdm12/gluetun/wiki/Other-options
+        - TZ
+        # Firewall: https://github.com/qdm12/gluetun/wiki/Firewall-options
+        - FIREWALL_DEBUG=on
+      deploy:
+        replicas: 1
+        restart_policy:
+          condition: on-failure
+      networks:
+      - gova11y
+
+
+networks:
+  gova11y:
