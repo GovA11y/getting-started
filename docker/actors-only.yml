@@ -148,7 +148,7 @@ services:
         - HTTPPROXY_LOG=on
         - HTTPPROXY_LISTENING_ADDRESS=:8888
         # DNS: https://github.com/qdm12/gluetun/wiki/DNS-options
-        - DNS_ADDRESS=127.0.0.1
+        # - DNS_ADDRESS=127.0.0.1
         - DOT_PRIVATE_ADDRESS=172.172.172.172
         - BLOCK_MALICIOUS=off
         - DOT_CACHING=on
@@ -170,12 +170,12 @@ services:
     image: gova11y/processor:latest
     hostname: processor
     environment:
-      - DB_POSTGRES_HOST=192.168.1.29
+      - DB_POSTGRES_HOST=10.128.0.2
       - DB_POSTGRES_PORT=5432
       - DB_POSTGRES_USER=a11ydata
       - DB_POSTGRES_PASSWORD=a11yAllTheThings!
       - DB_POSTGRES_NAME=a11ydata
-      - DB_CLICKHOUSE_HOST=192.168.1.29
+      - DB_CLICKHOUSE_HOST=10.128.0.2
       - DB_CLICKHOUSE_PORT=19000
       - DB_CLICKHOUSE_USER=a11ypython
       - DB_CLICKHOUSE_PASSWORD=SnakeInTheData
@@ -195,12 +195,12 @@ services:
     ports:
     - "3000:3000/tcp"
     environment:
-      - DB_POSTGRES_HOST=192.168.1.29
+      - DB_POSTGRES_HOST=10.128.0.2
       - DB_POSTGRES_PORT=5432
       - DB_POSTGRES_USER=a11ydata
       - DB_POSTGRES_PASSWORD=a11yAllTheThings!
       - DB_POSTGRES_NAME=a11ydata
-      - DB_CLICKHOUSE_HOST=192.168.1.29
+      - DB_CLICKHOUSE_HOST=10.128.0.2
       - DB_CLICKHOUSE_PORT=19000
       - DB_CLICKHOUSE_USER=a11ypython
       - DB_CLICKHOUSE_PASSWORD=SnakeInTheData
