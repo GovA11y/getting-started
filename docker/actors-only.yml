@@ -165,5 +165,53 @@ services:
       - gova11y
 
 
+# Data Processor
+  processor:
+    image: gova11y/processor:latest
+    hostname: processor
+    environment:
+      - DB_POSTGRES_HOST=192.168.1.29
+      - DB_POSTGRES_PORT=5432
+      - DB_POSTGRES_USER=a11ydata
+      - DB_POSTGRES_PASSWORD=a11yAllTheThings!
+      - DB_POSTGRES_NAME=a11ydata
+      - DB_CLICKHOUSE_HOST=192.168.1.29
+      - DB_CLICKHOUSE_PORT=19000
+      - DB_CLICKHOUSE_USER=a11ypython
+      - DB_CLICKHOUSE_PASSWORD=SnakeInTheData
+      - DB_CLICKHOUSE_NAME=gova11y
+      - APP_PORT=3000
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - gova11y
+
+# Reports
+  reports:
+    image: gova11y/reports:latest
+    hostname: reports
+    ports:
+    - "3000:3000/tcp"
+    environment:
+      - DB_POSTGRES_HOST=192.168.1.29
+      - DB_POSTGRES_PORT=5432
+      - DB_POSTGRES_USER=a11ydata
+      - DB_POSTGRES_PASSWORD=a11yAllTheThings!
+      - DB_POSTGRES_NAME=a11ydata
+      - DB_CLICKHOUSE_HOST=192.168.1.29
+      - DB_CLICKHOUSE_PORT=19000
+      - DB_CLICKHOUSE_USER=a11ypython
+      - DB_CLICKHOUSE_PASSWORD=SnakeInTheData
+      - DB_CLICKHOUSE_NAME=gova11y
+      - APP_PORT=3000
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - gova11y
+
 networks:
   gova11y:
