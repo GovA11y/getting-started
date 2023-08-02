@@ -207,6 +207,8 @@ services:
       - DB_CLICKHOUSE_NAME=gova11y
       - APP_PORT=3000
       - PYROSCOPE_APPLICATION_NAME=gova11y_ca_reports
+      - PYROSCOPE_SERVER
+      - PYROSCOPE_API_KEY
     deploy:
       replicas: 1
       restart_policy:
