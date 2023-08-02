@@ -187,7 +187,7 @@ services:
 
   processor-1:
     image: gova11y/processor:latest
-    hostname: processor
+    hostname: processor-1
     environment:
       - DB_POSTGRES_HOST=10.128.0.2
       - DB_POSTGRES_PORT=5432
@@ -211,7 +211,7 @@ services:
 
   processor-2:
     image: gova11y/processor:latest
-    hostname: processor
+    hostname: processor-2
     environment:
       - DB_POSTGRES_HOST=10.128.0.2
       - DB_POSTGRES_PORT=5432
@@ -235,7 +235,7 @@ services:
 
   processor-3:
     image: gova11y/processor:latest
-    hostname: processor
+    hostname: processor-3
     environment:
       - DB_POSTGRES_HOST=10.128.0.2
       - DB_POSTGRES_PORT=5432
@@ -259,7 +259,7 @@ services:
 
   processor-4:
     image: gova11y/processor:latest
-    hostname: processor
+    hostname: processor-4
     environment:
       - DB_POSTGRES_HOST=10.128.0.2
       - DB_POSTGRES_PORT=5432
