@@ -83,8 +83,6 @@ services:
         - "8087:8087/tcp"
       networks:
         - gova11y
-      depends_on:
-        - rabbit
       deploy:
         restart_policy:
           condition: on-failure
@@ -104,8 +102,6 @@ services:
         - "8084:8084"
       networks:
         - gova11y
-      depends_on:
-        - rabbit
       deploy:
         restart_policy:
           condition: on-failure
