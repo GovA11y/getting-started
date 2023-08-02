@@ -182,7 +182,7 @@ services:
       restart_policy:
         condition: on-failure
     networks:
-      - gova11y
+    - gova11y
 
 # Reports
   reports:
@@ -210,7 +210,7 @@ services:
       restart_policy:
         condition: on-failure
     networks:
-      - gova11y
+    - gova11y
 
 networks:
   gova11y:
