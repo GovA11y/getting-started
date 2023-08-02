@@ -10,5 +10,5 @@ Pull down git repository. Edit the `./docker/actors-only.yml` file
 
 ```
 cd docker
-docker compose up
+docker compose -f actors-only.yml up -d
 ```
