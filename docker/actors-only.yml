@@ -310,4 +310,5 @@ services:
     - gova11y
 
 networks:
-  gova11y:
+    gova11y:
+      external: true
