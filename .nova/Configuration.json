@@ -1,13 +1,4 @@
 {
-  "eablokker.tabsSidebar.config.customKindGroupsOrder" : [
-    "yaml",
-    "env"
-  ],
-  "eablokker.tabsSidebar.config.customTabOrder" : [
-    "\/Users\/bhensel\/repos\/GovA11y\/getting-started\/docker-compose.yml",
-    "\/Users\/bhensel\/repos\/GovA11y\/getting-started\/.env",
-    "\/Users\/bhensel\/repos\/GovA11y\/getting-started\/docker\/actors-only.yml"
-  ],
   "workspace.art_style" : 1,
   "workspace.color" : 4,
   "workspace.name" : "Getting Started"
