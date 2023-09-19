@@ -33,4 +33,12 @@ Docker
 docker compose up -d
 ```
 
+3) Setup Hasura
+
+    - Go to http://localhost:7051 and login with the `HASURA_GRAPHQL_ADMIN_SECRET` variable you set earlier.
+    - Connect the Postgres Database
+        - Go to [http://localhost:7051/console/data/v2/manage/database/add?driver=postgres](http://localhost:7051/console/data/v2/manage/database/add?driver=postgres)
+        - Select `Connection Parameters`
+        - Enter the `POSTGRES_USER` and `POSTGRES_PASSWORD` you set earlier.
+        - Click Connect
 
