@@ -1,0 +1,184 @@
+# ------------------------------
+# GovA11y Primary Stack
+# ------------------------------
+# Includes everything you need to get GovA11y running, but not the development tools
+# For development tools, see the docker-compose in the /developer directory.
+version: "3.8"
+services:
+# ------------------------------
+# Databases
+# ------------------------------
+  # ClickHouse | Analytics & Results
+  clickhouse:
+    image: gova11y/clickhouse:latest
+    hostname: db_clickhouse
+    ports:
+      - 7055:8123
+      - 7056:9000
+      - 7057:9009
+      - 7058:9005
+    environment:
+      - CLICKHOUSE_USER
+      - CLICKHOUSE_PASSWORD
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+    networks:
+      - a11y
+
+  # Postgres | Source of Truth
+  postgres:
+    image: gova11y/postgres:latest
+    hostname: db_postgres
+    ports:
+      - 7050:5432
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+    networks:
+      - a11y
+
+
+  # ------------------------------
+  # API
+  # ------------------------------
+
+  # GraphQL
+  graphql-engine:
+    image: hasura/graphql-engine:v2.33.0
+    container_name: hasura
+    hostname: hasura
+    ports:
+      - 7051:8080
+    restart: always
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://hasura:SecretsOfHasura@db_postgres:5432/hasura
+      ## Connection vars
+      PG_DATABASE_URL: postgres://hasura:SecretsOfHasura@db_postgres:5432/gova11y
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_EXPERIMENTAL_FEATURES: "naming_convention"
+      HASURA_GRAPHQL_REDIS_URL: "redis://db_redis:6379"
+      HASURA_GRAPHQL_RATE_LIMIT_REDIS_URL: "redis://hasura_redis:6379"
+      HASURA_GRAPHQL_MAX_CACHE_SIZE: "200"
+      HASURA_GRAPHQL_ADMIN_SECRET:
+      HASURA_GRAPHQL_METADATA_DEFAULTS: '{"backend_configs":{"dataconnector":{"athena":{"uri":"http://data-connector-agent:8081/api/v1/athena"},"mariadb":{"uri":"http://data-connector-agent:8081/api/v1/mariadb"},"mysql8":{"uri":"http://data-connector-agent:8081/api/v1/mysql"},"oracle":{"uri":"http://data-connector-agent:8081/api/v1/oracle"},"clickhouse":{"uri":"http://ch-data-connector-agent:8080"},"snowflake":{"uri":"http://data-connector-agent:8081/api/v1/snowflake"}}}}'
+    depends_on:
+      data-connector-agent:
+        condition: service_healthy
+    networks:
+      - a11y
+
+  # GraphQL Database Connection Agent
+  data-connector-agent:
+    image: hasura/graphql-data-connector:v2.33.0
+    hostname: data-connector-agent
+    restart: always
+    ports:
+      - 7052:8081
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/v1/athena/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - a11y
+
+  # GraphQL ClickHouse Connection Agent
+  ch-data-connector-agent:
+    image: gova11y/clickhouse_gdc_v2:latest
+    hostname: ch-data-connector-agent
+    restart: always
+    ports:
+      - 7059:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    networks:
+      - a11y
+
+# ------------------------------
+# Middleware
+# ------------------------------
+
+  # RabbitMQ | Keeps Rabbits in Line
+  rabbitmq:
+    image: gova11y/rabbitmq:latest
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "4369:4369/tcp"
+      - "5672:5672/tcp"
+      - "15672:15672/tcp"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "rabbitmqctl wait -q -t 5 /var/lib/rabbitmq/mnesia/rabbit@rabbit.pid",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      - a11y
+
+
+# ------------------------------
+# Command & Control
+# ------------------------------
+
+
+
+# ------------------------------
+# Workers & Nodes
+# ------------------------------
+
+
+# ------------------------------
+# Networks & Volumes
+# ------------------------------
+
+networks:
+  a11y:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.50.0.0/16"
+          gateway: "10.50.0.1"
+          ip_range: "10.50.0.0/24"
+
+volumes:
+  postgres_data:
+  redis_data:
+  clickhouse_data:
+  clickhouse_logs:
+
+
+
+
